@@ -1,203 +1,100 @@
+import { Component } from "./component.js";   // 원 컴포넌트 가져오기
+import { myGameArea } from "./myGameArea.js";   // 게임 공간 가져오기
+import { gameTimer } from "./gameTimer.js";     // 게임 타이머 가져오기
+// 게임 관련 변수
+var myGamePieces = [];      //게임 피스 즉, 원들을 배열로 관리 할 수 있게끔 배열 선언 
 
-// Component: 원 하나의 상태를 나타냄
-class Component {
-  constructor(radius, color, x, y) {
-    this.radius = radius;
-    this.color = color;
-    this.x = x;
-    this.y = y;
-  }
-
-  isClicked(mouseX, mouseY) {
-    const dx = mouseX - this.x;
-    const dy = mouseY - this.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
-    return distance < this.radius;
-  }
-
-  draw(ctx) {
-    ctx.fillStyle = this.color;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-    ctx.fill();
-  }
-}
-
-// ScoreManager: 점수 관리
-class ScoreManager {
-  constructor(scoreElementId) {
-    this.scoreEl = document.getElementById(scoreElementId);
-    this.score = 0;
-    this.update();
-  }
-
-  add(points = 1) {
-    this.score += points;
-    this.update();
-  }
-
-  reset() {
-    this.score = 0;
-    this.update();
-  }
-
-  update() {
-    this.scoreEl.innerText = `Score: ${this.score}`;
-  }
-}
-
-// TimerManager: 타이머 관리
-class TimerManager {
-  constructor(timerElementId, onTimeEnd) {
-    this.timerEl = document.getElementById(timerElementId);
-    this.intervalId = null;
-    this.onTimeEnd = onTimeEnd;
-  }
-
-  start(duration = 10) {
-    this.stop();
-    let timeLeft = duration;
-    this.timerEl.innerText = `Timer: ${timeLeft}`;
-
-    this.intervalId = setInterval(() => {
-      timeLeft--;
-      if (timeLeft > 0) {
-        this.timerEl.innerText = `Timer: ${timeLeft}`;
-      } else {
-        this.stop();
-        this.timerEl.innerText = "Game Over";
-        this.onTimeEnd();
-      }
-    }, 1000);
-  }
-
-  stop() {
-    clearInterval(this.intervalId);
-    this.timerEl.innerText = "Timer: 0";
-  }
-}
-
-// PositionManager: 위치 계산 (겹치지 않도록)
-class PositionManager {
-  constructor(canvas, radius) {
-    this.canvas = canvas;
-    this.radius = radius;
-  }
-
-  getRandomPosition(existingPieces) {
-    let x, y, valid;
-    do {
-      x = Math.random() * (this.canvas.width - 2 * this.radius) + this.radius;
-      y = Math.random() * (this.canvas.height - 2 * this.radius) + this.radius;
-
-      valid = existingPieces.every(piece => {
-        const dx = x - piece.x;
-        const dy = y - piece.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        return distance >= this.radius * 2.5;
-      });
-    } while (!valid);
-
-    return { x, y };
-  }
-}
-
-// GameArea: 전체 게임 관리
-class GameArea {
-  constructor(canvasId) {
-    this.canvas = document.getElementById(canvasId);
-    this.ctx = this.canvas.getContext("2d");
-    this.canvas.width = 720;
-    this.canvas.height = 480;
-    this.pieces = [];
-
-    this.scoreManager = new ScoreManager("score");
-    this.timerManager = new TimerManager("timer", () => this.endGame());
-    this.positionManager = new PositionManager(this.canvas, 40);
-
-    this.canvas.addEventListener("click", e => this.handleClick(e));
-  }
-
-  startGame() {
-    this.clear();
-    this.scoreManager.reset();
-    this.pieces = [];
-
+// 게임 시작
+function startGame() {      // 게임을 시작함
+    myGamePieces = [];      // 게임 피스를 저장할 배열을 초기화함
+    // 컴포넌트 속성을 지정해줌 반지름, 색상, x좌표, y좌표
     for (let i = 0; i < 6; i++) {
-      const pos = this.positionManager.getRandomPosition(this.pieces);
-      this.pieces.push(new Component(40, "#ff7777", pos.x, pos.y));
+        let position = Component.getRandomPosition(myGameArea.canvas, 40, myGamePieces);
+        myGamePieces.push(new Component(40, "#ff7777", position.x, position.y));    // 6개의 원을 생성해서 배열에 넣어줌 
     }
-    this.draw();
-    this.timerManager.start();
-  }
 
-  startGameWithDelay() {
-    let count = 3;
-    const countdown = () => {
-      this.clear();
-      this.ctx.fillStyle = "#000";
-      this.ctx.font = "48px Arial";
-      this.ctx.textAlign = "center";
-      this.ctx.fillText(count, this.canvas.width / 2, this.canvas.height / 2);
-
-      if (count > 0) {
-        count--;
-        setTimeout(countdown, 1000);
-        this.scoreManager.reset();
-        document.getElementById("timer").innerText = "Timer: 0";
-      } else {
-        this.startGame();
-      }
-    };
-    countdown();
-  }
-
-  clear() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-  }
-
-  draw() {
-    this.clear();
-    this.pieces.forEach(p => p.draw(this.ctx));
-  }
-
-  handleClick(e) {
-    const rect = this.canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-
-    for (let i = 0; i < this.pieces.length; i++) {
-      if (this.pieces[i].isClicked(mouseX, mouseY)) {
-        const pos = this.positionManager.getRandomPosition(this.pieces);
-        this.pieces[i] = new Component(40, "#ff7777", pos.x, pos.y);
-        this.draw();
-        this.scoreManager.add();
-        break;
-      }
-    }
-  }
-
-  endGame() {
-    this.pieces = [];
-    this.draw();
-  }
+    drawGamePieces();       // drawGamePieces() 함수를 호출해서 캔버스에 그려줌
 }
 
-// 기존 GameArea 클래스 코드는 그대로 유지
+// 게임 초기화
+function clearGame() {      // 원들을 저장한 배열, 게임 공간, 스코어, 게임 타이머 초기화
+    myGamePieces = [];      // 타이머는 매개변수를 활용 , gameTimer함수 참조
+    myGameArea.clear();
+    document.getElementById("score").innerText = "Score: 0";
+    gameTimer("off");
+    return true;
+}
 
-const game = new GameArea("gameCanvas");
+// 클릭 처리
+function handleClick(event) {
+    const rect = myGameArea.canvas.getBoundingClientRect(); //getBoundingClientRect()를 활용해서 캔버스의 위치를 불러옴
+    const mouseX = event.clientX - rect.left;   // 캔버스의 마우스 클릭 위치를 알려줌 
+    const mouseY = event.clientY - rect.top;    // ex : mouseX = 500 (브라우저 기준 클릭 위치) - 100 (캔버스 시작 위치)= 400px (캔버스 내부에서의 클릭 위치)
 
-// 전역 함수로 연결
+
+    for (let i = 0; i < myGamePieces.length; i++) {
+        const piece = myGamePieces[i];
+        const dx = mouseX - piece.x;
+        const dy = mouseY - piece.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);      // 마우스의 클릭 위치가 원의 중심에서 얼마나 떨어져있는지 구함
+
+        if (distance < piece.radius) {
+            const pos = Component.getRandomPosition(myGameArea.canvas, 40, myGamePieces);
+            myGamePieces[i] = new Component(40, "#ff7777", pos.x, pos.y);
+            drawGamePieces();
+            addScore();     // 클릭 위치가 원의 거리 안쪽이면 해당되는 원의 위치를 다른곳에 그려주고 점수를 추가함
+            break;      //break를 사용해서 한번만 처리함
+        }
+    }
+}
+
+// 점수 증가
+function addScore() {
+    const score = document.getElementById("score");     //score 요소를 참조
+    const currentScore = parseInt(score.innerText.replace("Score: ", "")) || 0;     // 기존 점수를 currentScore 변수에 저장, 숫자가 없으면 0을 넣어줌
+    score.innerText = "Score: " + (currentScore + 1);       // 점수를 1점 증가시켜서 표기
+}
+
+// 원 그리기
+function drawGamePieces() {
+    myGameArea.clear();     //게임 공간 초기화
+    const ctx = myGameArea.context;     //게임 공간 안에있는 요소 참조(배열)
+
+    myGamePieces.forEach(piece => piece.draw(ctx)); //게임 공간 안에있는 요소(배열)들을 그려줌
+}
+
+// 카운트다운 후 게임 시작
 function startGameWithDelay() {
-  game.startGameWithDelay();
+    const ctx = myGameArea.context; //게임 공간 안에있는 요소 참조
+    let count = 3;  // 카운트 3초를 주고싶으니 3할당
+
+    function updateCountdown() {
+        myGameArea.clear();     // 게임 화면 초기화 
+
+        ctx.fillStyle = "#000";
+        ctx.font = "48px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(count, myGameArea.canvas.width / 2, myGameArea.canvas.height / 2);     // 함수가 표시될 폰트,위치,사이즈등을 정해줌
+
+        if (count > 0) {
+            count--;
+            setTimeout(updateCountdown, 1000);
+            document.getElementById("score").innerText = "Score: 0";
+            document.getElementById("timer").innerText = "Timer: 0";    // 0보다 count가 크면 1씩 작아지면서 1초에 한번씩 실행됨 ,score와 timer를 0으로 설정
+        } else {
+            myGameArea.clear();
+            startGame();
+            gameTimer("on");        // 0보다 같거나 작은 경우 , 게임 공간 초기화 후 게임과 타이머 실행
+        }
+    }
+
+    updateCountdown();      // 카운트다운 시작
 }
 
-function clearGame() {
-  game.timerManager.stop();
-  game.pieces = [];
-  game.draw();
-  game.scoreManager.reset();
-}
-
-// 페이지 로드 시 자동 시작 제거
-// game.startGameWithDelay();
+// 시작
+myGameArea.start(handleClick);
+// 제일 아래쪽에 추가
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("startBtn").addEventListener("click", startGameWithDelay);
+    document.getElementById("resetBtn").addEventListener("click", clearGame);
+}); // html이 다 로딩된 후 실행되게끔 하는 코드★
