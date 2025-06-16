@@ -13,7 +13,7 @@ function startGameWithDelay() {
     function updateCountdown() {
         myGameArea.clear();     // 게임 화면 초기화 
 
-        ctx.fillStyle = "#000";
+        ctx.fillStyle = "#fff";
         ctx.font = "48px Arial";
         ctx.textAlign = "center";
         ctx.fillText(count, myGameArea.canvas.width / 2, myGameArea.canvas.height / 2);     // 함수가 표시될 폰트,위치,사이즈등을 정해줌
