@@ -46,6 +46,7 @@ function startGame() {      // 게임을 시작함
     drawGamePieces();       // drawGamePieces() 함수를 호출해서 캔버스에 그려줌
 }
 
+let intervalId = "";    // interval을 사용하려면 전역 설정을 해줘야 가능, interval 전용 변수 생성
 function gameTimer(switchState) {
     const timerEl = document.getElementById("timer");
 
@@ -109,7 +110,6 @@ function drawGamePieces() {
 
     myGamePieces.forEach(piece => piece.draw(ctx)); //게임 공간 안에있는 요소(배열)들을 그려줌
 }
- let intervalId = "";    // interval을 사용하려면 전역 설정을 해줘야 가능, interval 전용 변수 생성
 
 // 시작
 myGameArea.start(handleClick);
