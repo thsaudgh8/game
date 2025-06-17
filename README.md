@@ -81,13 +81,6 @@ Canvas 위에 생성된 원들을 클릭해 점수를 얻고, 제한 시간 내 
    - clearGame() → 원, 타이머, 점수 초기화
 
 ---
-## 실행 화면
-![image](https://github.com/user-attachments/assets/235260fa-d33b-41b8-a799-5d4df20c173c)
-
-![image](https://github.com/user-attachments/assets/33d59a25-30df-486b-bc09-5a3d9ecf5c73)
-
-
----
 
 ## Module Diagram 
 
@@ -97,5 +90,12 @@ Canvas 위에 생성된 원들을 클릭해 점수를 얻고, 제한 시간 내 
 
 ## scirpt.js Flowchart Diagram
  ![image](https://github.com/user-attachments/assets/cfe53ec4-666e-4858-8b33-c21ea51ae045)
+
+
+---
+## 실행 화면
+![image](https://github.com/user-attachments/assets/235260fa-d33b-41b8-a799-5d4df20c173c)
+
+![image](https://github.com/user-attachments/assets/33d59a25-30df-486b-bc09-5a3d9ecf5c73)
 
 
